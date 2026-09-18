@@ -486,6 +486,12 @@ int findQueueFamilyIndexWithCapsNoThrow(const InstanceInterface &vkInstance, VkP
 uint32_t findQueueFamilyIndexWithCaps(const InstanceInterface &vkInstance, VkPhysicalDevice physicalDevice,
                                       VkQueueFlags requiredCaps, VkQueueFlags excludedCaps, uint32_t *availableCount)
 {
+    /* r300vk: R300-class hardware exposes no compute queue (Vulkan-on-R300 is
+     * not spec-conformant by construction).  Satisfy a request for exactly the
+     * universal graphics+compute queue with a graphics-only queue so the CTS
+     * framework can create its default device and exercise r300VK graphics. */
+    if (requiredCaps == (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))
+        requiredCaps = VK_QUEUE_GRAPHICS_BIT;
     const vector<VkQueueFamilyProperties> queueProps =
         getPhysicalDeviceQueueFamilyProperties(vkInstance, physicalDevice);
 
